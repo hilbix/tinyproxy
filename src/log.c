@@ -70,7 +70,12 @@ static unsigned int logging_initialized = FALSE;     /* boolean */
  */
 int open_log_file (const char *log_file_name)
 {
-        log_file_fd = create_file_safely (log_file_name, FALSE);
+	if (!strcmp(log_file_name, "stdout:"))
+		log_file_fd = config.godaemon ? -1 : 1;
+	else if (!strcmp(log_file_name, "stderr:"))
+		log_file_fd = config.godaemon ? -1 : 2;
+	else
+        	log_file_fd = create_file_safely (log_file_name, FALSE);
         return log_file_fd;
 }
 
@@ -79,7 +84,7 @@ int open_log_file (const char *log_file_name)
  */
 void close_log_file (void)
 {
-        if (log_file_fd < 0) {
+        if (log_file_fd < (config.godaemon ? 0 : 3)) {
                 return;
         }
 
@@ -188,8 +193,7 @@ void log_message (int level, const char *fmt, ...)
 
                 ret = write (log_file_fd, str, strlen (str));
                 if (ret == -1) {
-                        log_message (LOG_WARNING,
-                                     "Could not write to log file");
+			fprintf(stderr, "Could not write to log file %d\n", log_file_fd);
                 }
 
                 fsync (log_file_fd);
