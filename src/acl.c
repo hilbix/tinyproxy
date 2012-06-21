@@ -329,7 +329,7 @@ static int check_numeric_acl (const struct acl_s *acl, const char *ip)
  *     1 if allowed
  *     0 if denied
  */
-int check_acl (const char *ip, const char *host, vector_t access_list)
+int check_acl_quiet (const char *ip, const char *host, vector_t access_list)
 {
         struct acl_s *acl;
         int perm = 0;
@@ -362,15 +362,24 @@ int check_acl (const char *ip, const char *host, vector_t access_list)
                  * Check the return value too see if the IP address is
                  * allowed or denied.
                  */
-                if (perm == 0)
-                        break;
-                else if (perm == 1)
-                        return perm;
+                if (perm == 0 || perm == 1)
+			return perm;
         }
 
         /*
          * Deny all connections by default.
          */
+	return 0;
+}
+
+int check_acl (const char *ip, const char *host, vector_t access_list)
+{
+	int perm;
+
+	perm = check_acl_quiet(ip, host, access_list);
+	if (perm == 1)
+		return perm;
+
         log_message (LOG_NOTICE, "Unauthorized connection from \"%s\" [%s].",
                      host, ip);
         return 0;
