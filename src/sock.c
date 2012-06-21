@@ -33,6 +33,7 @@
 #include "sock.h"
 #include "text.h"
 #include "conf.h"
+#include "acl.h"
 
 /*
  * Bind the given socket to the supplied address.  The socket is
@@ -75,7 +76,7 @@ bind_socket (int sockfd, const char *addr, int family)
  * the getaddrinfo() library function, which allows for a protocol
  * independent implementation (mostly for IPv4 and IPv6 addresses.)
  */
-int opensock (const char *host, int port, const char *bind_to)
+int opensock_acl (const char *host, int port, const char *bind_to, vector_t acl)
 {
         int sockfd, n;
         struct addrinfo hints, *res, *ressave;
@@ -98,7 +99,19 @@ int opensock (const char *host, int port, const char *bind_to)
         }
 
         ressave = res;
+	sockfd = -1; /* keep lint happy */
         do {
+		if (acl) {
+			/* For optimizing this check_acl must be splitted
+			 * into host checking and ip checking siblings
+			 */
+			char ipaddr[IP_LENGTH];
+
+			if (get_ip_string (res->ai_addr, ipaddr, IP_LENGTH) == NULL
+			    || ! check_acl_quiet(ipaddr, host, acl))
+				continue;	/* try next address	*/
+		}
+
                 sockfd =
                     socket (res->ai_family, res->ai_socktype, res->ai_protocol);
                 if (sockfd < 0)
@@ -134,6 +147,11 @@ int opensock (const char *host, int port, const char *bind_to)
         }
 
         return sockfd;
+}
+
+int opensock (const char *host, int port, const char *bind_to)
+{
+  return opensock_acl(host, port, bind_to, NULL);
 }
 
 /*

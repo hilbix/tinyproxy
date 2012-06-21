@@ -22,12 +22,15 @@
 #ifndef TINYPROXY_SOCK_H
 #define TINYPROXY_SOCK_H
 
+#include "vector.h"
+
 /* The IP length is set to 48, since IPv6 can be that long */
 #define IP_LENGTH		48
 #define HOSTNAME_LENGTH		1024
 
 #define MAXLINE (1024 * 4)
 
+extern int opensock_acl (const char *host, int port, const char *bind_to, vector_t acl);
 extern int opensock (const char *host, int port, const char *bind_to);
 extern int listen_sock (uint16_t port, socklen_t * addrlen);
 
