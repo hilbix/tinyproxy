@@ -95,6 +95,10 @@ struct config_s {
 
         vector_t access_list;
 
+	/* Store the list of addresses allowed to CONNECT.
+	 */
+        vector_t acl_connect;
+
         /*
          * Store the list of port allowed by CONNECT.
          */

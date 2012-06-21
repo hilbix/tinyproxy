@@ -1469,8 +1469,9 @@ void handle_connection (int fd)
                         goto fail;
                 }
         } else {
-                connptr->server_fd = opensock (request->host, request->port,
-                                               connptr->server_ip_addr);
+                connptr->server_fd = opensock_acl (request->host, request->port,
+                                                   connptr->server_ip_addr,
+						   config.acl_connect);
                 if (connptr->server_fd < 0) {
                         indicate_http_error (connptr, 500, "Unable to connect",
                                              "detail",

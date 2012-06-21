@@ -122,6 +122,8 @@ static HANDLE_FUNC (handle_bindsame);
 static HANDLE_FUNC (handle_connectport);
 static HANDLE_FUNC (handle_defaulterrorfile);
 static HANDLE_FUNC (handle_deny);
+static HANDLE_FUNC (handle_destallow);
+static HANDLE_FUNC (handle_destdeny);
 static HANDLE_FUNC (handle_errorfile);
 static HANDLE_FUNC (handle_addheader);
 #ifdef FILTER_ENABLE
@@ -228,6 +230,10 @@ struct {
                  handle_allow),
         STDCONF ("deny", "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
                  handle_deny),
+        STDCONF ("destallow", "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
+                 handle_destallow),
+        STDCONF ("destdeny", "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
+                 handle_destdeny),
         STDCONF ("bind", "(" IP "|" IPV6 ")", handle_bind),
         /* other */
         STDCONF ("errorfile", INT WS STR, handle_errorfile),
@@ -307,6 +313,7 @@ static void free_config (struct config_s *conf)
         safefree (conf->errorpage_undef);
         safefree (conf->statpage);
         flush_access_list (conf->access_list);
+        flush_access_list (conf->acl_connect);
         free_connect_ports_list (conf->connect_ports);
         hashmap_delete (conf->anonymous_map);
 
@@ -524,6 +531,7 @@ static void initialize_with_defaults (struct config_s *conf,
         }
 
         /* vector_t access_list; */
+        /* vector_t acl_connect; */
         /* vector_t connect_ports; */
         /* hashmap_t anonymous_map; */
 }
@@ -859,6 +867,24 @@ static HANDLE_FUNC (handle_deny)
         char *arg = get_string_arg (line, &match[2]);
 
         insert_acl (arg, ACL_DENY, &conf->access_list);
+        safefree (arg);
+        return 0;
+}
+
+static HANDLE_FUNC (handle_destallow)
+{
+        char *arg = get_string_arg (line, &match[2]);
+
+        insert_acl (arg, ACL_ALLOW, &conf->acl_connect);
+        safefree (arg);
+        return 0;
+}
+
+static HANDLE_FUNC (handle_destdeny)
+{
+        char *arg = get_string_arg (line, &match[2]);
+
+        insert_acl (arg, ACL_DENY, &conf->acl_connect);
         safefree (arg);
         return 0;
 }
