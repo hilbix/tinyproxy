@@ -234,6 +234,26 @@ ViaProxyName "tinyproxy"
 #DisableViaHeader Yes
 
 #
+# This list is like Allow and Deny, but for outgoing connections.
+# It does not apply to upstream proxies.
+#
+# If there is no rule, all outgoing connections are allowed.
+# Rules are processed in-order, the first matching one wins.
+# If there are rules, but none is matching, the connection is denied.
+#
+DestDeny 0.0.0.0/8
+DestDeny 127.0.0.0/8
+DestDeny 224.0.0.0/3
+DestDeny 10.0.0.0/8
+DestDeny 172.16.0.0/12
+DestDeny 192.168.0.0/16
+DestAllow 0.0.0.0/0
+# Allow IPv6, too
+DestDeny fe80::/64
+DestDeny ::1/128
+DestAllow ::/0
+
+#
 # Filter: This allows you to specify the location of the filter file.
 #
 #Filter "@sysconfdir@/filter"
