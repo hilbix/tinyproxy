@@ -101,16 +101,17 @@ int opensock_acl (const char *host, int port, const char *bind_to, vector_t acl)
         ressave = res;
 	sockfd = -1; /* keep lint happy */
         do {
-		if (acl) {
-			/* For optimizing this check_acl must be splitted
-			 * into host checking and ip checking siblings
-			 */
-			char ipaddr[IP_LENGTH];
-
-			if (get_ip_string (res->ai_addr, ipaddr, IP_LENGTH) == NULL
-			    || ! check_acl_quiet(ipaddr, host, acl))
-				continue;	/* try next address	*/
+		char ipaddr[IP_LENGTH];
+		if (get_ip_string (res->ai_addr, ipaddr, IP_LENGTH) == NULL)
+			continue;
+		/* For optimizing this check_acl must be splitted
+		 * into host checking and ip checking siblings
+		 */
+		if (! check_acl_quiet(ipaddr, host, acl)) {
+			log_message(LOG_NOTICE, "Denied destination '%s' [%s]", host, ipaddr);
+			continue;	/* try next address	*/
 		}
+		log_message(LOG_CONN, "Allowed destination '%s' [%s]", host, ipaddr);
 
                 sockfd =
                     socket (res->ai_family, res->ai_socktype, res->ai_protocol);
