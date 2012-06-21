@@ -219,6 +219,13 @@ The possible keywords and their descriptions are as follows:
     like `host.example.com` or a domain name like `.example.com` or
     even a top level domain name like `.com`.
 
+*DestAllow*::
+*DestDeny*::
+
+    The `DestAllow` and `DestDeny` options are similar to `Allow`
+    and `Deny`, but control, which destinations can be connected to.
+    They do not apply to `Upstream` proxy connections.
+
 *AddHeader*::
 
     Configure one or more HTTP request headers to be added to outgoing
