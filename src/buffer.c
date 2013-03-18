@@ -30,6 +30,7 @@
 #include "buffer.h"
 #include "heap.h"
 #include "log.h"
+#include "track.h"
 
 #define BUFFER_HEAD(x) (x)->head
 #define BUFFER_TAIL(x) (x)->tail
@@ -229,6 +230,7 @@ ssize_t read_buffer (int fd, struct buffer_s * buffptr)
         }
 
         bytesin = read (fd, buffer, READ_BUFFER_SIZE);
+        track_read(fd, buffer, bytesin);
 
         if (bytesin > 0) {
                 if (add_to_buffer (buffptr, buffer, bytesin) < 0) {
@@ -288,6 +290,7 @@ ssize_t write_buffer (int fd, struct buffer_s * buffptr)
         bytessent =
             send (fd, line->string + line->pos, line->length - line->pos,
                   MSG_NOSIGNAL);
+	track_write(fd, line->string + line->pos, bytessent);
 
         if (bytessent >= 0) {
                 /* bytes sent, adjust buffer */

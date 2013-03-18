@@ -28,6 +28,8 @@
 #include "heap.h"
 #include "network.h"
 
+#include "track.c"
+
 /*
  * Write the buffer to the socket. If an EINTR occurs, pick up and try
  * again. Keep sending until the buffer has been sent.
@@ -42,6 +44,8 @@ ssize_t safe_write (int fd, const char *buffer, size_t count)
         assert (count > 0);
 
         bytestosend = count;
+
+        track_write(fd, buffer, count);
 
         while (1) {
                 len = send (fd, buffer, bytestosend, MSG_NOSIGNAL);
@@ -74,6 +78,8 @@ ssize_t safe_read (int fd, char *buffer, size_t count)
         do {
                 len = read (fd, buffer, count);
         } while (len < 0 && errno == EINTR);
+
+	track_read(fd, buffer, len);
 
         return len;
 }
@@ -192,6 +198,7 @@ ssize_t readline (int fd, char **whole_buffer)
                 }
 
                 recv (fd, line_ptr->data, diff, 0);
+		track_read(fd, line_ptr->data, diff);
                 line_ptr->len = diff;
 
                 if (ptr) {

@@ -48,6 +48,7 @@
 #include "upstream.h"
 #include "connect-ports.h"
 #include "conf.h"
+#include "track.h"
 
 /*
  * Maximum length of a HTTP line
@@ -1486,6 +1487,8 @@ void handle_connection (int fd)
                              "file descriptor %d.", request->host,
                              connptr->server_fd);
 
+		track(connptr, request);
+
                 if (!connptr->connect_method)
                         establish_http_connection (connptr, request);
         }
@@ -1543,6 +1546,8 @@ fail:
         }
 
 done:
+	untrack(connptr);
+
         free_request_struct (request);
         hashmap_delete (hashofheaders);
         destroy_conn (connptr);
